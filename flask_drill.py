@@ -83,7 +83,39 @@ def create_book():
     
 @app.route("/api/books/<int:book_id>", methods=["PUT"])
 def update_book(book_id):
-    pass
+    if not request.is_json:
+        return jsonify(
+            {
+                "success": False,
+                "error": "Content-type must be application/json"
+            }
+        ), HTTPStatus.BAD_REQUEST
+
+    book = find_book(book_id)
+
+    if book is None:
+        return jsonify(
+            {
+                "success": False,
+                "error": "Book not found"
+            }
+        ), HTTPStatus.NOT_FOUND
+
+    data = request.get_json()
+
+    if "title" in data:
+        book["title"] = data["title"]
+    if "author" in data:
+        book["author"] = data["author"]
+    if "year" in data:
+        book["year"] = data["year"]
+
+    return jsonify(
+        {
+            "success": True,
+            "data": book,
+        }
+    ), HTTPStatus.OK
 
 @app.route("/api/books/<int:book_id>", methods=["DELETE"])
 def delete_book(book_id):
