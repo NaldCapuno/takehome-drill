@@ -146,7 +146,25 @@ def update_book(book_id):
 
 @app.route("/api/books/<int:book_id>", methods=["DELETE"])
 def delete_book(book_id):
-    pass
+    book = Book.query.get(book_id)
+
+    if book is None:
+        return jsonify(
+            {
+                "success": False, 
+                "error": "Book not found"
+            }
+        ), HTTPStatus.NOT_FOUND
+
+    db.session.delete(book)
+    db.session.commit()
+
+    return jsonify(
+        {
+            "success": True, 
+            "message": "Book deleted successfully"
+        }
+    ), HTTPStatus.OK
 
 @app.errorhandler(404)
 def not_found(error):
