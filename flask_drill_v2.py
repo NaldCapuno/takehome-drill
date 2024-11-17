@@ -60,11 +60,89 @@ def get_book(book_id):
 
 @app.route("/api/books", methods=["POST"])
 def create_book():
-    pass
+    if not request.is_json:
+        return jsonify(
+            {
+                "success": False, 
+                "error": "Content-type must be application/json"
+            }
+        ), HTTPStatus.BAD_REQUEST
+
+    data = request.get_json()
+    required_fields = ["title", "author", "year"]
+
+    for field in required_fields:
+        if field not in data:
+            return jsonify(
+                {
+                    "success": False, 
+                    "error": f"Missing required field: {field}"
+                }
+            ), HTTPStatus.BAD_REQUEST
+
+    new_book = Book(
+        title=data['title'],
+        author=data['author'],
+        year=data['year']
+    )
+
+    db.session.add(new_book)
+    db.session.commit()
+
+    return jsonify(
+        {
+            "success": True, 
+            "data": {
+                "id": new_book.id,
+                "title": new_book.title,
+                "author": new_book.author,
+                "year": new_book.year
+            }
+        }
+    ), HTTPStatus.CREATED
 
 @app.route("/api/books/<int:book_id>", methods=["PUT"])
 def update_book(book_id):
-    pass
+    if not request.is_json:
+        return jsonify(
+            {
+                "success": False, 
+                "error": "Content-type must be application/json"
+            }
+        ), HTTPStatus.BAD_REQUEST
+
+    book = Book.query.get(book_id)
+
+    if book is None:
+        return jsonify(
+            {
+                "success": False, 
+                "error": "Book not found"
+            }
+        ), HTTPStatus.NOT_FOUND
+
+    data = request.get_json()
+
+    if "title" in data:
+        book.title = data["title"]
+    if "author" in data:
+        book.author = data["author"]
+    if "year" in data:
+        book.year = data["year"]
+
+    db.session.commit()
+
+    return jsonify(
+        {
+            "success": True, 
+            "data": {
+                "id": book.id,
+                "title": book.title,
+                "author": book.author,
+                "year": book.year
+            }
+        }
+    ), HTTPStatus.OK
 
 @app.route("/api/books/<int:book_id>", methods=["DELETE"])
 def delete_book(book_id):
