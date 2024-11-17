@@ -17,11 +17,46 @@ class Book(db.Model):
 
 @app.route("/api/books", methods=["GET"])
 def get_books():
-    pass
+    books = Book.query.all()
+    books_list = [
+        {
+            "id": book.id,
+            "title": book.title,
+            "author": book.author,
+            "year": book.year
+        } for book in books
+    ]
+    return jsonify(
+        {
+            "success": True, 
+            "data": books_list, 
+            "total": len(books_list)
+        }
+    ), HTTPStatus.OK
 
 @app.route("/api/books/<int:book_id>", methods=["GET"])
 def get_book(book_id):
-    pass
+    book = Book.query.get(book_id)
+
+    if book is None:
+        return jsonify(
+            {
+                "success": False, 
+                "error": "Book not found"
+            }
+        ), HTTPStatus.NOT_FOUND
+
+    return jsonify(
+        {
+            "success": True, 
+            "data": {
+                "id": book.id,
+                "title": book.title,
+                "author": book.author,
+                "year": book.year
+            }
+        }
+    ), HTTPStatus.OK
 
 @app.route("/api/books", methods=["POST"])
 def create_book():
